@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Mojang Launcher</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div>
+        <h1>Mojang Launcher</h1>
+        <input id="email" placeholder="Email">
+        <br>
+        <input id="password" placeholder="Password" type="password">
+        <br>
+        <button id="btn">Add Account</button>
+        <p id="alert"></p>
+    </div>
+    <script>
+        const electron = require("electron")
+        const {ipcRenderer} = electron
+
+        const button = document.getElementById("btn")
+        const email = document.getElementById("email")
+        const pass = document.getElementById("password")
+        const alert = document.getElementById("alert")
+
+        button.addEventListener("click",()=>{
+            if(email.value==""||pass.value==""){
+                alert.innerText = "Invaild email or password"
+                return
+            }
+                
+            ipcRenderer.send('acc:add', email.value, pass.value)
+            location.href = "main.html"
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Mojang Launcher</title>
+    <link rel="stylesheet" href="main.css">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <div id="main_div">
+        <h1>Mojang Launcher</h1>
+        <div id="accdiv">
+            <button id="accbtn">Choose Account</button>
+            <ul id="acclist">
+
+            </ul>
+        </div>
+    
+        <br>
+
+        <div id="verdiv">
+            <button id="verbtn">Choose Version</button>
+            <ul id="verlist">
+
+            </ul>
+        </div>
+        
+        <br>
+
+        <button id="btn">Launch</button>
+        <p id="alert"></p>
+    </div>
+    <script>
+        const electron = require("electron")
+        const {ipcRenderer} = electron
+
+        const accbtn = document.getElementById("accbtn")
+        const verbtn = document.getElementById("verbtn")
+
+        const accList = document.getElementById("acclist")
+        const verList = document.getElementById("verlist")
+
+        const accDiv = document.getElementById("accdiv")
+        const verDiv = document.getElementById("verdiv")
+
+        const launchbtn = document.getElementById("btn")
+        const alert = document.getElementById("alert")
+
+        let accListOn = false
+        let verListOn = false
+        let glAccList = []
+        let glVerList = []
+        const addAcc = document.createElement("a")
+        addAcc.innerText = "Add account"
+        addAcc.setAttribute("href", "login.html")
+
+        accbtn.addEventListener("click", ()=>{
+            ipcRenderer.send('acc:list')
+        })
+
+        verbtn.addEventListener("click", ()=>{
+            ipcRenderer.send('ver:list')
+        })
+
+        ipcRenderer.on('acc:listrcv', (e, acclist)=>{
+            if(accListOn){
+                return
+            }
+            glAccList = acclist
+            for(let acc = 0; acc < acclist.length; acc++){
+                
+                let listEl = document.createElement("li")
+                listEl.setAttribute("accIndex", acc)
+
+                let listElAdd = document.createElement("p")
+                listElAdd.innerText = `${acclist[acc]["email"]}`
+                listElAdd.setAttribute("accIndex", acc)
+                listElAdd.setAttribute("class", "accp")
+                listElAdd.style.cursor = "pointer"
+                
+                let listElRemove = document.createElement("i")
+                listElRemove.setAttribute("class", "bx bx-trash")
+                listElRemove.setAttribute("accIndex", acc)
+                listElRemove.style.cursor = "pointer"
+
+                listEl.appendChild(listElAdd)
+                listEl.appendChild(listElRemove)
+                accList.appendChild(listEl)
+                
+
+                listElAdd.addEventListener("click", ()=>{
+                    ipcRenderer.send("acc:set", listElAdd.getAttribute("accIndex"))
+                    accList.innerHTML = ""
+                    accListOn = false
+                    accbtn.style.background = "red"
+                    accbtn.style.cursor = "pointer"
+                    accDiv.removeChild(addAcc)
+                    if(glAccList[listElAdd.getAttribute("accIndex")]["email"].length<17){
+                        accbtn.textContent = glAccList[listElAdd.getAttribute("accIndex")]["email"]
+                    }else{
+                        accbtn.textContent = glAccList[listElAdd.getAttribute("accIndex")]["email"].slice(0,17) + "..."
+                    }
+                })
+
+                listElRemove.addEventListener("click", ()=>{
+                    ipcRenderer.send("acc:remove", listElRemove.getAttribute("accIndex"))
+                    glAccList.splice(listElRemove.getAttribute("accIndex"),1)
+                    accList.innerHTML = ""
+                    accListOn = false
+                    accbtn.style.background = "red"
+                    accbtn.style.cursor = "pointer"
+                    accDiv.removeChild(addAcc)
+                    accbtn.textContent = "Choose Account"
+                })
+
+            }
+            if(acclist.length===0){
+                accDiv.innerHTML += "<p>You have no saved accounts</p>"
+            }
+            accDiv.appendChild(addAcc)
+
+            accbtn.style.background = "#D8B8B8"
+            accbtn.style.cursor = "default"
+            accListOn = true
+        })
+
+        ipcRenderer.on('ver:listrcv', (e, verlist)=>{
+            if(verListOn){
+                return
+            }
+            glVerList = verlist
+            for(let ver = 0; ver < verlist.length; ver++){
+                
+                let listEl = document.createElement("li")
+                listEl.setAttribute("verIndex", ver)
+
+                let listElAdd = document.createElement("p")
+                listElAdd.innerText = `${verlist[ver]}`
+                listElAdd.setAttribute("verIndex", ver)
+                listElAdd.setAttribute("class", "accp")
+                listElAdd.style.cursor = "pointer"
+
+                listEl.appendChild(listElAdd)
+                verList.appendChild(listEl)
+
+                listElAdd.addEventListener("click", ()=>{
+                    ipcRenderer.send("ver:set", listElAdd.getAttribute("verIndex"))
+                    verList.innerHTML = ""
+                    verListOn = false
+                    verbtn.style.background = "red"
+                    verbtn.style.cursor = "pointer"
+                    if(glVerList[listElAdd.getAttribute("verIndex")].length<17){
+                        verbtn.textContent = glVerList[listElAdd.getAttribute("verIndex")]
+                    }else{
+                        verbtn.textContent = glVerList[listElAdd.getAttribute("verIndex")].slice(0,17) + "..."
+                    }
+                })
+
+            }
+            if(verlist.length===0){
+                verDiv.innerHTML += "<p>You have no installed versions</p>"
+            }
+
+            verbtn.style.background = "#D8B8B8"
+            verbtn.style.cursor = "default"
+            verListOn = true
+        })
+
+        launchbtn.addEventListener("click", ()=>{
+            ipcRenderer.send("launch")
+            launchbtn.style.background = "#D8B8B8"
+            launchbtn.style.cursor = "default"
+            alert.innerText = "Launching..."
+            setTimeout(()=>{
+                launchbtn.style.background = "red"
+                launchbtn.style.cursor = "pointer"
+                alert.innerText = ""
+            },7000)
+        })
+
+        ipcRenderer.on("launchfail", ()=>{
+            alert.innerText = "Select a version and a account"
+            launchbtn.style.background = "red"
+            launchbtn.style.cursor = "pointer"
+        })
+
+    </script>
+</body>
+</html>

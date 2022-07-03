@@ -1,0 +1,22 @@
+{
+  "name": "simple-launcher",
+  "version": "1.0.0",
+  "description": "Simple launcher",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=images/mojang_logo.png --prune=true --out=release-builds",
+    "package-win": "electron-packager . mojang-launcher --overwrite --asar=true --platform=win32 --arch=ia32 --icon=images/mojang_logo.png --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Mojang Launcher\"",    
+    "package-linux": "electron-packager . mojang-launcher --overwrite --asar=true --platform=linux --arch=x64 --icon=images/mojang_logo.png --prune=true --out=release-builds"
+  },
+  "author": "ngn",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^19.0.7",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "electron-packager": "^15.5.1"
+  }
+}
